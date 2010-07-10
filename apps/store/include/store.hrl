@@ -1,0 +1,3 @@
+-record(item, {id, name, description, price}).
+-record(item_option, {id, item_id, name, value, price=0, inventory}).
+-record(counter, {type, count}). 

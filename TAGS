@@ -1,0 +1,140 @@
+
+apps/basket/.eunit/basket_app.erl,27
+start(12,270
+stop(15,333
+
+apps/basket/.eunit/basket_server.erl,244
+-define(SERVER20,560
+-record(state22,588
+start_link(35,1003
+new(45,1388
+get(55,1733
+empty(66,2040
+add_item(76,2344
+init(95,2902
+handle_call(112,3559
+handle_cast(126,4018
+handle_info(139,4461
+terminate(153,4975
+code_change(164,5294
+
+apps/basket/.eunit/basket_sup.erl,53
+-define(CHILD13,178
+start_link(19,418
+init(26,660
+
+apps/basket/include/basket.hrl,17
+-record(item1,0
+
+apps/basket/src/basket_app.erl,27
+start(12,270
+stop(15,333
+
+apps/basket/src/basket_server.erl,244
+-define(SERVER20,560
+-record(state22,588
+start_link(35,1003
+new(45,1388
+get(55,1733
+empty(66,2040
+add_item(76,2344
+init(95,2902
+handle_call(112,3559
+handle_cast(126,4018
+handle_info(139,4461
+terminate(153,4975
+code_change(164,5294
+
+apps/basket/src/basket_sup.erl,53
+-define(CHILD13,178
+start_link(19,418
+init(26,660
+
+apps/store/.eunit/store_app.erl,27
+start(12,269
+stop(15,331
+
+apps/store/.eunit/store_db.erl,201
+-define(SERVER20,569
+-record(state22,597
+start_link(35,1012
+add_item(45,1326
+init(63,1921
+handle_call(80,2578
+handle_cast(94,3037
+handle_info(107,3480
+terminate(121,3994
+code_change(132,4313
+
+apps/store/.eunit/store_id.erl,23
+object_counter(12,322
+
+apps/store/.eunit/store_sup.erl,53
+-define(CHILD13,177
+start_link(19,417
+init(26,659
+
+apps/store/.eunit/store_test_db.erl,59
+setup (setup12,322
+teardown(16,392
+write (write21,458
+
+apps/store/.eunit/test_store_db.erl,21
+setup (setup17,468
+
+apps/store/.eunit/test_store_id.erl,140
+-define (TABLE15,439
+setup (setup19,504
+teardown(28,856
+id_test_(33,950
+generate_id_tests(39,1167
+do(48,1387
+stop_start_run(54,1509
+
+apps/store/include/store.hrl,64
+-record(item1,0
+-record(item_option2,47
+-record(counter3,116
+
+apps/store/src/store_app.erl,27
+start(12,269
+stop(15,331
+
+apps/store/src/store_db.erl,201
+-define(SERVER20,581
+-record(state22,609
+start_link(35,1024
+add_item(45,1338
+init(63,1933
+handle_call(80,2590
+handle_cast(94,3049
+handle_info(107,3492
+terminate(121,4006
+code_change(132,4325
+
+apps/store/src/store_mnesia_db.erl,23
+object_counter(14,454
+
+apps/store/src/store_sup.erl,53
+-define(CHILD13,177
+start_link(19,417
+init(26,659
+
+apps/store/test/store_test_db.erl,165
+-define(TABLES11,298
+setup (setup14,370
+create_table(18,440
+create_tables(21,568
+clear_tables(29,723
+clear_table(38,877
+teardown(41,931
+write (write46,997
+
+apps/store/test/test_store_mnesia_db.erl,140
+-define (TABLE15,446
+setup (setup19,511
+teardown(28,804
+id_test_(33,898
+generate_id_tests(39,1115
+do(48,1335
+stop_start_run(54,1464

@@ -1,0 +1,21 @@
+* Shop is my attempt at a self-contained shop type thing
+The idea is that (like mochstrap) you use this project to generate a simple, skinnable interwebz shop
+It is supposed to allow you to add products to your inventory, then sell those products on your pages.
+There will be a basket and a checkout that uses Paypal Express Checkout.
+It will be as modular and resuable as possible. Hopefully you just add your front end pages. We shall see.
+The idea is to be able to create skinnable, customisable web shops for a few hours work.
+
+** Store
+Store is the app that allows you to add inventory.
+*** We need to persist store items [[http://www.pivotaltracker.com/story/show/4144578][Story]]
+**** TODO Create an "items" record
+
+
+** Basket
+Basket is an app that implements a shopping basket
+
+** PPEC
+PayPal Express Checkout App. Takes a basket and buys it
+
+** Storefront
+Here is where the wares are sold
