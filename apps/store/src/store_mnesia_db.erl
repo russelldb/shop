@@ -75,7 +75,7 @@ fetch_all_items() ->
 %% @end
 %%--------------------------------------------------------------------
 fetch_options_for_items([], Acc) ->
-    Acc;
+    lists:reverse(Acc);
 fetch_options_for_items([Item|Rest], Acc) ->
     Options = qlc:e(qlc:q([X || X <- mnesia:table(item_option), X#item_option.item_id =:= Item#item.id ])),
     fetch_options_for_items(Rest, [{item, Item, Options}|Acc]).
