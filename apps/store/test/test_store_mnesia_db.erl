@@ -13,8 +13,6 @@
 
 -include ("store.hrl").
 
--define (TABLE, counter).
-
 
 %%% Initialize database and tables. 
 setup() ->
@@ -110,7 +108,7 @@ generate_get_all_items_tests(_X) ->
     Item2= #item{id=2, name="Breeks", description="Long shorts/short longs", price=10000},
     Item2ColourOption = #item_option{item_id=2, id=3, name="colour", value="blue", inventory=99},
     Item2SizeOption =  #item_option{item_id=2, id=4, name="size", value="large"},
-    %% TODO finish this 1) add to db manually 2) call API
+   
     do(fun() ->
 	       mnesia:write(Item),
 	       mnesia:write(ItemColourOption),
@@ -119,9 +117,13 @@ generate_get_all_items_tests(_X) ->
 	       mnesia:write(Item2ColourOption),
 	       mnesia:write(Item2SizeOption)
        end),
+
     Items = store_mnesia_db:fetch_all_items(),
-    %%% TODO more asserts to verify data structure of response
-    [?_assert(length(Items) =:= 2), ?_assertMatch([{item, _, _}|_], Items)].
+
+    [?_assert(length(Items) =:= 2), 
+     ?_assertMatch([{item, _, _}|_], Items),
+     ?_assert(contains(Items, {Item, [ItemColourOption, ItemSizeOption]})), 
+     ?_assert(contains(Items, {Item2, [Item2ColourOption, Item2SizeOption]}))].
 
 
 
@@ -129,6 +131,25 @@ generate_get_all_items_tests(_X) ->
 %%--------------------------------------------------------------------
 %% Internal functions
 %%--------------------------------------------------------------------
+contains([], _) ->
+    false;
+contains([{item, Item, O}|_], {Item, Opts}) ->
+    contains_opts(O, Opts);
+contains([_|T], ItemAndOpts) ->
+    contains(T, ItemAndOpts).
+
+contains_opts(Opts, MyOpts) when length(Opts) =/= length(MyOpts) ->
+    false;
+contains_opts(Opts, MyOpts) ->
+    is_empty([ X || X <- MyOpts,
+	    lists:member(X, Opts) =:= false]).
+
+is_empty([])->
+    true;
+is_empty(_) ->
+    false.
+    
+
 do(F) ->
     {atomic, Val} =  mnesia:transaction (F),
     Val.

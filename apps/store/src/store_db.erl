@@ -11,17 +11,17 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0, add_item/1]).
+-export([start_link/1, stop/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
 -define(SERVER, ?MODULE). 
-
--record(state, {}).
+-define(STORE_API, [{add_item, 1}, {add_item, 2}, {fetch_all_items, 0}]).
 
 -include("store.hrl").
+
 
 %%%===================================================================
 %%% API
@@ -34,18 +34,11 @@
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+start_link(Env) ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, Env, []).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Saves an item
-%%
-%% @spec add_item(item()) -> {ok, Item} | {error, Error}
-%% @end
-%%--------------------------------------------------------------------
-add_item(Item) when is_record(Item, item) ->
-    gen_server:call({put, Item}).
+stop() ->
+    gen_server:cast(?SERVER, stop).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -62,8 +55,10 @@ add_item(Item) when is_record(Item, item) ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([]) ->
-    {ok, #state{}}.
+init(Env) ->
+    Store_db = proplists:get_value(db_module, Env),
+    true = is_valid(Store_db:module_info(exports)),
+    {ok, Store_db}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -93,6 +88,8 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+handle_cast(stop, State) ->
+    {stop, normal, State};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -137,7 +134,14 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-
-
+%%--------------------------------------------------------------------
+%% @doc Checks that the passed module exports the required functions
+%% @spec is_valid([export()]) -> true | false
+%% @end
+%%--------------------------------------------------------------------
+is_valid([]) ->
+    exit(bad_mod);
+is_valid(Exports) ->
+    lists:all( fun(X) -> lists:member(X, Exports) end,  ?STORE_API).
 
 
