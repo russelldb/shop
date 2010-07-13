@@ -11,7 +11,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/1, stop/0]).
+-export([start_link/1, stop/0, add_item/1, add_item/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -26,7 +26,6 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
-
 %%--------------------------------------------------------------------
 %% @doc
 %% Starts the server
@@ -37,8 +36,29 @@
 start_link(Env) ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, Env, []).
 
+%%--------------------------------------------------------------------
+%% @doc stops the server
+%% @spec stop() -> 
+%% @end
+%%--------------------------------------------------------------------
 stop() ->
     gen_server:cast(?SERVER, stop).
+
+%%--------------------------------------------------------------------
+%% @doc calls the callback module's add_item/1 function
+%% @spec add_item(item()) -> ok
+%% @end
+%%--------------------------------------------------------------------
+add_item(Item) when is_record(Item, item) ->
+    gen_server:call(?SERVER, {add, Item}).
+
+%%--------------------------------------------------------------------
+%% @doc adds an item and its options
+%% @spec add_item(item(), [opt()]) -> ok
+%% @end
+%%--------------------------------------------------------------------
+add_item(Item, Opts) when is_record(Item, item), is_list(Opts) ->
+    gen_server:call(?SERVER, {add, Item, Opts}).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -58,7 +78,7 @@ stop() ->
 init(Env) ->
     Store_db = proplists:get_value(db_module, Env),
     true = is_valid(Store_db:module_info(exports)),
-    {ok, Store_db}.
+    {ok, {db, Store_db}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -74,9 +94,12 @@ init(Env) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call(_Request, _From, State) ->
-    Reply = ok,
-    {reply, Reply, State}.
+handle_call({add, Item}, _From, {db, Db}=State) when is_record(Item, item) ->
+    Res = Db:add_item(Item),
+    {reply, Res, State};
+handle_call({add, Item, Opts}, _From, {db, Db}=State) when is_record(Item, item), is_list(Opts) ->
+    Res = Db:add_item(Item, Opts),
+    {reply, Res, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -89,9 +112,7 @@ handle_call(_Request, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_cast(stop, State) ->
-    {stop, normal, State};
-handle_cast(_Msg, State) ->
-    {noreply, State}.
+    {stop, normal, State}.
 
 %%--------------------------------------------------------------------
 %% @private

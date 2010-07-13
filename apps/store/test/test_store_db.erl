@@ -15,21 +15,33 @@
 
 -include ("store.hrl").
 
-setup() ->
-   ok.
-
-teardown(_) ->
-    store_db:stop().
+teardown() ->
+    store_db:stop(), 
+    timer:sleep(500).
 
 init_test_() ->
-     {setup, fun() -> setup() end, fun(X) -> teardown(X) end,
-     [ ?_assertMatch({ok, Pid}, store_db:start_link([{db_module, test_store_db}])) ]}.
+    {setup, fun() -> no_op end, fun(_) -> teardown() end,
+     [ ?_assertMatch({ok, _}, store_db:start_link([{db_module, test_store_db}])) ]}.
+
+add_item_test_() ->
+    {setup, fun() ->
+		    {ok, _} = store_db:start_link([{db_module, test_store_db}]) end,
+     fun(_) ->
+	     teardown() end,
+     [?_assertMatch( add_item, store_db:add_item(#item{}))]}.
+
+add_item_and_opts_test_() ->
+    {setup, fun() ->
+		    {ok, _} = store_db:start_link([{db_module, test_store_db}]) end,
+     fun(_) ->
+	     teardown() end,
+     [?_assertMatch(add_item_and_opts, store_db:add_item(#item{}, [#item_option{}]))]}.
 
 add_item(_Item) ->
-    ok.
+    add_item.
 
 add_item(_Item, _Options) ->
-    ok.
+    add_item_and_opts.
 
 fetch_all_items() ->
     ok.
