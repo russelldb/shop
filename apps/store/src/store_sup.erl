@@ -11,18 +11,17 @@
 
 %% Helper macro for declaring children of supervisor
 -define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+-define(DYNA_CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, dynamic}).
 
 %% ===================================================================
 %% API functions
 %% ===================================================================
-
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %% ===================================================================
 %% Supervisor callbacks
 %% ===================================================================
-
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, []} }.
+    {ok, { {one_for_one, 5, 10}, [?DYNA_CHILD(store_event_manager, worker), ?CHILD(store_db, worker), ?CHILD(store_authenticator, worker)]} }.
 

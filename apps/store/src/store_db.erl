@@ -11,7 +11,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/1, stop/0, add_item/1, add_item/2]).
+-export([start_link/1, stop/0, add_item/1, add_item/2, fetch_all_items/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -60,6 +60,14 @@ add_item(Item) when is_record(Item, item) ->
 add_item(Item, Opts) when is_record(Item, item), is_list(Opts) ->
     gen_server:call(?SERVER, {add, Item, Opts}).
 
+%%--------------------------------------------------------------------
+%% @doc gets all the items in the store
+%% @spec fetch_all_items() ->[{item, item(), [item_option()]}]
+%% @end
+%%--------------------------------------------------------------------
+fetch_all_items() ->
+    gen_server:call(?SERVER, {fetch_all}).
+
 %%%===================================================================
 %%% gen_server callbacks
 %%%===================================================================
@@ -99,6 +107,9 @@ handle_call({add, Item}, _From, {db, Db}=State) when is_record(Item, item) ->
     {reply, Res, State};
 handle_call({add, Item, Opts}, _From, {db, Db}=State) when is_record(Item, item), is_list(Opts) ->
     Res = Db:add_item(Item, Opts),
+    {reply, Res, State};
+handle_call({fetch_all}, _From, {db, Db}=State) ->
+    Res = Db:fetch_all_items(),
     {reply, Res, State}.
 
 %%--------------------------------------------------------------------

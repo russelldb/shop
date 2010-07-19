@@ -8,7 +8,7 @@
 
 -export ([setup/0, teardown/0, write/1, create_tables/0, clear_tables/0]).
 
--define(TABLES, [item, item_option, counter]).
+-define(TABLES, [item, item_option, counter, user]).
 
 %%% Initialize database
 setup () ->
@@ -23,7 +23,9 @@ create_table(item) ->
 create_table(item_option) ->
     mnesia:create_table (item_option, [{attributes,  record_info(fields, item_option)}, {disc_copies, [node()]}]);
 create_table(counter) ->
-    mnesia:create_table (counter, [{attributes,  record_info(fields, counter)}, {disc_copies, [node()]}]).
+    mnesia:create_table (counter, [{attributes,  record_info(fields, counter)}, {disc_copies, [node()]}]);
+create_table(user) ->
+    mnesia:create_table (user, [{attributes,  record_info(fields, user)}, {disc_copies, [node()]}, {type, set}]).
 
 create_tables() ->
     create_tables(?TABLES).

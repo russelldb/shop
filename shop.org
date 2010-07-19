@@ -8,8 +8,49 @@ The idea is to be able to create skinnable, customisable web shops for a few hou
 ** Store
 Store is the app that allows you to add inventory.
 *** We need to persist store items [[http://www.pivotaltracker.com/story/show/4144578][Story]]
-**** TODO Create an "items" record
+**** DONE Create an "items" record
+*** TODO create behviour for store_db
+*** TODO Add webmachine to deps
 
+*** TODO Look at secure auth
+
+*** TODO Look at secure session
+
+
+** TODO Add auth
+*** TODO Auth needs
+
+** TODO successful LOGIN
+for wm?
+must come over ssl
+must check header for same X-SSL header
+must have nginx add this header if over SSL
+
+for be?
+*** DONE must check that user in datastore
+*** DONE must compare bcrypt hash of password against password for user
+*** TODO must log successful login time
+*** TODO Must log fail attempts
+*** TODO Must increment fail attempts
+*** TODO Must log missing user attempts
+*** TODO must return last login time with success response
+*** TODO must return role[s] with success response
+What about a session id? 
+
+?ip of auth requester?
+
+
+timed back off for failed attempts from same IP
+timed back off for failed attempts on same account
+timed back off for total failed attempts per minute
+
+
+** TODO build store supervision tree
+*** DONE Need authenticator
+*** DONE store db
+*** TODO session server (??) 
+*** TODO wm frontend (?),
+*** DONE store event manager
 
 ** Basket
 Basket is an app that implements a shopping basket
@@ -19,3 +60,4 @@ PayPal Express Checkout App. Takes a basket and buys it
 
 ** Storefront
 Here is where the wares are sold
+

@@ -1,3 +1,4 @@
 -record(item, {id, name, description, price}).
 -record(item_option, {id, item_id, name, value, price=0, inventory}).
 -record(counter, {type, count}). 
+-record(user, {username, password, last_login, failed_attempts=0, roles, locked=false, admin_locked=false, last_fail}).
