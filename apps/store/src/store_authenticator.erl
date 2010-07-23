@@ -28,6 +28,7 @@ authenticate(Username, Password) ->
 		true ->
 		    check_for_lock(User);
 		false ->
+		    %% updated fail count, last failed date and check to see if we should lock and write to db
 		    store_event_manager:notify({fail, bad_paasword, User}),
 		    fail
 	    end
@@ -50,12 +51,26 @@ q(Q) ->
     F = fun () -> qlc:e(Q) end,
     {atomic, Val} = mnesia:transaction(F),
     Val.
+
+%%--------------------------------------------------------------------
+%% @doc just write a row
+%% @spec write(record()) -> ok
+%% @end
+%%--------------------------------------------------------------------
+
+write(Row) ->
+    F = fun() ->
+		mnesia:write(Row) end,
+    {atomic, ok} = mnesia:transaction(F),
+    ok.
 %%--------------------------------------------------------------------
 %% @doc checks for account locks
 %% @spec check_for_locks(user()) -> {ok, user()} | locked | admin_locked
 %% @end
 %%--------------------------------------------------------------------
 check_for_lock(#user{locked=false, admin_locked=false} = User) ->
+    %% update last_login date, reset failed couunt and write to db
+    successful_login(User),
     store_event_manager:notify({success, User}),
     {ok, User};
 check_for_lock(#user{locked=true}=User) ->
@@ -64,4 +79,17 @@ check_for_lock(#user{locked=true}=User) ->
 check_for_lock(#user{admin_locked=true}=User) ->
     store_event_manager:notify({fail, admin_locked, User}),
     admin_locked.
-    
+
+
+%%--------------------------------------------------------------------
+%% @doc updates the user's record
+%% @spec successful_login(User) -> ok | fail
+%% @end
+%%--------------------------------------------------------------------
+successful_login(User) when is_record(User, user) ->
+    User2 = User#user{failed_attempts=0, last_login=erlang:localtime()},
+    write(User2).
+
+
+
+

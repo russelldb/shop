@@ -39,7 +39,7 @@ auth_test_() ->
     ALockedUser = #user{username=ALUsername, password=Hash, locked=false, admin_locked=true},
 
     {setup, fun() -> setup(),
-		     {ok, Pid} = store_event_manager:start_link(),
+		     {ok, _} = store_event_manager:start_link(),
 		     store_auth_event_handler:register(),
 		     store_test_db:write(User),
 		     store_test_db:write(LockedUser),
@@ -51,4 +51,24 @@ auth_test_() ->
       ?_assertMatch(locked,  store_authenticator:authenticate(LUsername, Password)),
       ?_assertMatch(fail,  store_authenticator:authenticate("Herman", Password)),
       ?_assertMatch(admin_locked,  store_authenticator:authenticate(ALUsername, Password))]}.
+
+%%--------------------------------------------------------------------
+%% @doc tests that a successful login updates the last login time, but returns the *last* logged in time before this
+%% @spec
+%% @end
+%% @TODO Here I need to check that the last login time in the db is updated (IE later than the one in returned record)
+%%--------------------------------------------------------------------
+success_test_() ->
+    LastLogin = erlang:localtime(),
+    Username = "user",
+    Password = "password",
+    Hash = bcrypt:hashpw(Password, bcrypt:gen_salt()),
+    User = #user{username=Username, password=Hash, last_login=LastLogin},
+
+    {setup, fun() -> setup(),
+		     store_test_db:write(User)
+	    end, 
+     fun(X) -> teardown(X) end,
+     [?_assertMatch({ok, User}, store_authenticator:authenticate(Username, Password))]}.
+
 
