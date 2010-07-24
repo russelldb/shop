@@ -56,19 +56,96 @@ auth_test_() ->
 %% @doc tests that a successful login updates the last login time, but returns the *last* logged in time before this
 %% @spec
 %% @end
-%% @TODO Here I need to check that the last login time in the db is updated (IE later than the one in returned record)
 %%--------------------------------------------------------------------
 success_test_() ->
-    LastLogin = erlang:localtime(),
+    LastLogin = store_util:now(),
     Username = "user",
     Password = "password",
     Hash = bcrypt:hashpw(Password, bcrypt:gen_salt()),
     User = #user{username=Username, password=Hash, last_login=LastLogin},
 
     {setup, fun() -> setup(),
-		     store_test_db:write(User)
+		     store_test_db:write(User),
+		     {Username, Password, LastLogin}
 	    end, 
      fun(X) -> teardown(X) end,
-     [?_assertMatch({ok, User}, store_authenticator:authenticate(Username, Password))]}.
+     fun(X) -> generate_success(X) end}.
+
+%%--------------------------------------------------------------------
+%% @doc generates asserts to check current last login is after User#user.last_login
+%% @spec generate_success({UserName, Password, LastLogin})
+%% @end
+%%--------------------------------------------------------------------
+generate_success({Username, Password, LastLogin}) ->
+    {ok, #user{last_login=LL}} = store_authenticator:authenticate(Username, Password),
+    #user{last_login=LL2} = store_test_db:get_user(Username),
+    [?_assertMatch(LL, LastLogin), ?_assert(LL2 > LastLogin)].
+    
+
+%%--------------------------------------------------------------------
+%% @doc tests that a failing login ups the failed count for the user
+%% @spec
+%% @end
+%%--------------------------------------------------------------------
+fail_test_() ->
+    Username = "user",
+    Password = "password",
+    Hash = bcrypt:hashpw(Password, bcrypt:gen_salt()),
+    User = #user{username=Username, password=Hash},
+    {setup, fun() -> setup(),
+		     store_test_db:write(User),
+		     {Username, store_util:now()}
+	    end, 
+     fun(X) -> teardown(X) end,
+     fun(X) -> generate_fail(X) end}.
+
+%%--------------------------------------------------------------------
+%% @doc generates asserts to check current last fail is after TS
+%% @spec generate_fail({UserName, TS})
+%% @end
+%%--------------------------------------------------------------------
+generate_fail({Username, TS}) ->
+    Res = store_authenticator:authenticate(Username, "gibbergabber"),
+    #user{last_fail=LastFail, fail_count=FC} = store_test_db:get_user(Username),
+    [?_assertMatch(fail, Res), ?_assertMatch(FC, 1), ?_assert(LastFail > TS)].
+    
+%%--------------------------------------------------------------------
+%% @doc tests that a failing login over the max count locks the account
+%% @spec
+%% @end
+%%--------------------------------------------------------------------
+lock_test_() ->
+    Username = "user",
+    Password = "password",
+    Hash = bcrypt:hashpw(Password, bcrypt:gen_salt()),
+    User = #user{username=Username, password=Hash, fail_count=2},
+    {setup, fun() -> setup(),
+		     store_test_db:write(User),
+		     User
+	    end, 
+     fun(X) -> teardown(X) end,
+     [?_assertMatch(fail,  store_authenticator:authenticate(Username, "gibbergabber")),
+      ?_assertMatch(#user{fail_count=3}, store_test_db:get_user(Username)),
+      ?_assertMatch(fail,  store_authenticator:authenticate(Username, "gibbergabber")),
+      ?_assertMatch(locked,  store_authenticator:authenticate(Username, Password)),
+      ?_assertMatch(#user{fail_count=3, locked=true}, store_test_db:get_user(Username))]}.
 
 
+%%--------------------------------------------------------------------
+%% @doc tests that a successful login resets fail count
+%% @spec
+%% @end
+%%--------------------------------------------------------------------
+reset_fail_test_() ->
+    Username = "user",
+    Password = "password",
+    Hash = bcrypt:hashpw(Password, bcrypt:gen_salt()),
+    User = #user{username=Username, password=Hash, fail_count=2},
+    {setup, fun() -> setup(),
+		     store_test_db:write(User),
+		     User
+	    end, 
+     fun(X) -> teardown(X) end,
+     [?_assertMatch(fail, store_authenticator:authenticate(Username, "gibbergabber")),
+      ?_assertMatch({ok, _}, store_authenticator:authenticate(Username, Password)),
+      ?_assertMatch(#user{fail_count=0}, store_test_db:get_user(Username))]}.

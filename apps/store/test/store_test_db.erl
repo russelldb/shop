@@ -6,7 +6,9 @@
 
 -include ("store.hrl").
 
--export ([setup/0, teardown/0, write/1, create_tables/0, clear_tables/0]).
+-include_lib("stdlib/include/qlc.hrl").
+
+-export ([setup/0, teardown/0, write/1, create_tables/0, clear_tables/0, get_user/1]).
 
 -define(TABLES, [item, item_option, counter, user]).
 
@@ -57,4 +59,19 @@ write (Row) ->
                 mnesia:write (Row)
         end,
     mnesia:transaction (F).
+
+%%--------------------------------------------------------------------
+%% @doc runs a qlc query in a transaction
+%% @spec q(qlcq()) ->
+%% @end
+%%--------------------------------------------------------------------
+q(Q) ->
+    F = fun () -> qlc:e(Q) end,
+    {atomic, Val} = mnesia:transaction(F),
+    Val.
+
+
+get_user(Username) ->
+    [User] = q(qlc:q([X || X <- mnesia:table(user), X#user.username =:= Username ])),
+    User.
 

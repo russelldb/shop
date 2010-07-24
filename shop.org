@@ -10,17 +10,16 @@ Store is the app that allows you to add inventory.
 *** We need to persist store items [[http://www.pivotaltracker.com/story/show/4144578][Story]]
 **** DONE Create an "items" record
 *** TODO create behviour for store_db
-*** TODO Add webmachine to deps
+*** DONE Add webmachine to deps
 
 *** TODO Look at secure auth
-
 *** TODO Look at secure session
 
 
 ** TODO Add auth
 *** TODO Auth needs
 
-** TODO successful LOGIN
+** successful LOGIN
 for wm?
 must come over ssl
 must check header for same X-SSL header
@@ -29,17 +28,17 @@ must have nginx add this header if over SSL
 for be?
 *** DONE must check that user in datastore
 *** DONE must compare bcrypt hash of password against password for user
-*** TODO must log successful login time
-*** TODO Must log fail attempts
-*** TODO Must increment fail attempts
-*** TODO Must log missing user attempts
-*** TODO must return last login time with success response
-*** TODO must return role[s] with success response
+*** DONE must log successful login time
+*** DONE Must log fail attempts
+*** DONE Must increment fail attempts
+*** DONE Must log missing user attempts
+*** DONE must return last login time with success response
+*** DONE must return role[s] with success response
 What about a session id? 
 
 ?ip of auth requester?
 
-
+** Login guardian
 timed back off for failed attempts from same IP
 timed back off for failed attempts on same account
 timed back off for total failed attempts per minute

@@ -70,7 +70,7 @@ handle_event({fail,locked, User}, State) ->
     error_logger:info_msg("Failed login from user user ~p.Locked account~n",  [User#user.username]),
     {ok, State};
 handle_event({fail, admin_locked, User}, State) ->
-    error_logger:info_msg("Failed login from user user ~p. Admin lcoked account~n",  [User#user.username]),
+    error_logger:info_msg("Failed login from user user ~p. Admin locked account~n",  [User#user.username]),
     {ok, State};
 handle_event({success, User}, State) ->
     %% update last_login date, reset failed couunt and write to db
