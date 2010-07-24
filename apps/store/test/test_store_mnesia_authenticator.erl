@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 17 Jul 2010 by Russell Brown <russell@ossme.net>
 %%%-------------------------------------------------------------------
--module(test_store_authenticator).
+-module(test_store_mnesia_authenticator).
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("stdlib/include/qlc.hrl").
@@ -46,11 +46,11 @@ auth_test_() ->
 		     store_test_db:write(ALockedUser)
 	    end, 
      fun(X) -> teardown(X) end,
-     [?_assertMatch({ok, _}, store_authenticator:authenticate(Username, Password)),
-      ?_assertMatch(fail,  store_authenticator:authenticate(Username, "gibbergabber")),
-      ?_assertMatch(locked,  store_authenticator:authenticate(LUsername, Password)),
-      ?_assertMatch(fail,  store_authenticator:authenticate("Herman", Password)),
-      ?_assertMatch(admin_locked,  store_authenticator:authenticate(ALUsername, Password))]}.
+     [?_assertMatch({ok, _}, store_mnesia_authenticator:authenticate(Username, Password)),
+      ?_assertMatch(fail,  store_mnesia_authenticator:authenticate(Username, "gibbergabber")),
+      ?_assertMatch(locked,  store_mnesia_authenticator:authenticate(LUsername, Password)),
+      ?_assertMatch(fail,  store_mnesia_authenticator:authenticate("Herman", Password)),
+      ?_assertMatch(admin_locked,  store_mnesia_authenticator:authenticate(ALUsername, Password))]}.
 
 %%--------------------------------------------------------------------
 %% @doc tests that a successful login updates the last login time, but returns the *last* logged in time before this
@@ -77,7 +77,7 @@ success_test_() ->
 %% @end
 %%--------------------------------------------------------------------
 generate_success({Username, Password, LastLogin}) ->
-    {ok, #user{last_login=LL}} = store_authenticator:authenticate(Username, Password),
+    {ok, #user{last_login=LL}} = store_mnesia_authenticator:authenticate(Username, Password),
     #user{last_login=LL2} = store_test_db:get_user(Username),
     [?_assertMatch(LL, LastLogin), ?_assert(LL2 > LastLogin)].
     
@@ -105,7 +105,7 @@ fail_test_() ->
 %% @end
 %%--------------------------------------------------------------------
 generate_fail({Username, TS}) ->
-    Res = store_authenticator:authenticate(Username, "gibbergabber"),
+    Res = store_mnesia_authenticator:authenticate(Username, "gibbergabber"),
     #user{last_fail=LastFail, fail_count=FC} = store_test_db:get_user(Username),
     [?_assertMatch(fail, Res), ?_assertMatch(FC, 1), ?_assert(LastFail > TS)].
     
@@ -124,10 +124,10 @@ lock_test_() ->
 		     User
 	    end, 
      fun(X) -> teardown(X) end,
-     [?_assertMatch(fail,  store_authenticator:authenticate(Username, "gibbergabber")),
+     [?_assertMatch(fail,  store_mnesia_authenticator:authenticate(Username, "gibbergabber")),
       ?_assertMatch(#user{fail_count=3}, store_test_db:get_user(Username)),
-      ?_assertMatch(fail,  store_authenticator:authenticate(Username, "gibbergabber")),
-      ?_assertMatch(locked,  store_authenticator:authenticate(Username, Password)),
+      ?_assertMatch(fail,  store_mnesia_authenticator:authenticate(Username, "gibbergabber")),
+      ?_assertMatch(locked,  store_mnesia_authenticator:authenticate(Username, Password)),
       ?_assertMatch(#user{fail_count=3, locked=true}, store_test_db:get_user(Username))]}.
 
 
@@ -146,6 +146,6 @@ reset_fail_test_() ->
 		     User
 	    end, 
      fun(X) -> teardown(X) end,
-     [?_assertMatch(fail, store_authenticator:authenticate(Username, "gibbergabber")),
-      ?_assertMatch({ok, _}, store_authenticator:authenticate(Username, Password)),
+     [?_assertMatch(fail, store_mnesia_authenticator:authenticate(Username, "gibbergabber")),
+      ?_assertMatch({ok, _}, store_mnesia_authenticator:authenticate(Username, Password)),
       ?_assertMatch(#user{fail_count=0}, store_test_db:get_user(Username))]}.

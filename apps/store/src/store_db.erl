@@ -18,7 +18,6 @@
 	 terminate/2, code_change/3]).
 
 -define(SERVER, ?MODULE). 
--define(STORE_API, [{add_item, 1}, {add_item, 2}, {fetch_all_items, 0}]).
 
 -include("store.hrl").
 
@@ -174,6 +173,6 @@ code_change(_OldVsn, State, _Extra) ->
 is_valid([]) ->
     exit(bad_mod);
 is_valid(Exports) ->
-    lists:all( fun(X) -> lists:member(X, Exports) end,  ?STORE_API).
+    lists:all( fun(X) -> lists:member(X, Exports) end, store_db_behaviour:behaviour_info(callbacks)).
 
 

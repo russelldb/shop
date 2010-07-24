@@ -8,6 +8,8 @@
 %%%-------------------------------------------------------------------
 -module(store_mnesia_db).
 
+-behaviour(store_db_behaviour).
+
 -export([object_counter/1, add_item/1, add_item/2, fetch_all_items/0]).
 
 -include_lib("stdlib/include/qlc.hrl").

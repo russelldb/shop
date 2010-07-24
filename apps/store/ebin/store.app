@@ -9,7 +9,11 @@
 	     store_mnesia_db,
 	     store_authenticator,
 	     store_auth_event_handler,
-	     store_event_manager
+	     store_event_manager,
+	     store_db_behaviour,
+	     store_mnesia_authenticator,
+	     store_authenticator_behaviour,
+	     store_util
             ]},
   {registered, []},
   {applications, [
