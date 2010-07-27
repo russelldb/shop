@@ -11,7 +11,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0]).
+-export([start_link/1, stop/0, authenticate/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -19,7 +19,7 @@
 
 -define(SERVER, ?MODULE). 
 
--record(state, {}).
+-include("store.hrl").
 
 %%%===================================================================
 %%% API
@@ -32,8 +32,25 @@
 %% @spec start_link(Env) -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+start_link(Env) ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, Env, []).
+
+
+%%--------------------------------------------------------------------
+%% @doc stops the server
+%% @spec stop() -> 
+%% @end
+%%--------------------------------------------------------------------
+stop() ->
+    gen_server:cast(?SERVER, stop).
+
+%%--------------------------------------------------------------------
+%% @doc authenticates the credentials passed against the configured scheme
+%% @spec authenticate(Username::string(), Password::string()) -> {ok, User::user()} | fail | locked | admin_locked
+%% @end
+%%--------------------------------------------------------------------
+authenticate(Username, Password) when is_list(Username), is_list(Password) ->
+    gen_server:call(?SERVER, {authenticate, Username, Password}).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -50,8 +67,11 @@ start_link() ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([]) ->
-    {ok, #state{}}.
+init(Env) ->
+    Authenticator = proplists:get_value(auth_module, Env),
+    true = is_valid(Authenticator:module_info(exports)),
+    {ok, {auth, Authenticator}}.
+
 
 %%--------------------------------------------------------------------
 %% @private
@@ -67,9 +87,9 @@ init([]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call(_Request, _From, State) ->
-    Reply = ok,
-    {reply, Reply, State}.
+handle_call({authenticate, Username, Password}, _From, {auth, Auth}=State) ->
+    Res = Auth:authenticate(Username, Password),
+    {reply, Res, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -81,8 +101,8 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_cast(_Msg, State) ->
-    {noreply, State}.
+handle_cast(stop, State) ->
+    {stop, normal, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -125,3 +145,13 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+%%--------------------------------------------------------------------
+%% @doc Checks that the passed module exports the required functions
+%% @spec is_valid([export()]) -> true | false
+%% @end
+%%--------------------------------------------------------------------
+is_valid([]) ->
+    exit(bad_mod);
+is_valid(Exports) ->
+    lists:all( fun(X) -> lists:member(X, Exports) end, store_authenticator_behaviour:behaviour_info(callbacks)).

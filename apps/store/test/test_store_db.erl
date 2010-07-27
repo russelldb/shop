@@ -9,6 +9,8 @@
 %%%-------------------------------------------------------------------
 -module(test_store_db).
 
+-behaviour(store_db_behaviour).
+
 -export([add_item/1, add_item/2, fetch_all_items/0]).
 
 -include_lib("eunit/include/eunit.hrl").
