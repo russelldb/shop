@@ -13,7 +13,7 @@
 -define(TAB, session).
 
 %% API
--export([get_value/2, set_value/3, clear/1, new/0, init/1]).
+-export([get_value/2, put/3, clear/1, new/0, init/1]).
 
 %%%===================================================================
 %%% API
@@ -33,36 +33,41 @@ init(Env) ->
 %% @end
 %%--------------------------------------------------------------------
 new() ->
-    Key = crypto:sha(term_to_binary({store_util:now(), erlang:make_ref()})),
+    SessionId = crypto:sha(term_to_binary({store_util:now(), erlang:make_ref()})),
     TS = store_util:now(),
-    true = ets:insert(?TAB, {Key, [{ts, TS}]}),
-    Key.
+    true = ets:insert(?TAB, {SessionId, [{ts, TS}]}),
+    SessionId.
 
 %%--------------------------------------------------------------------
 %% @doc clears the session completely
 %% @spec clear(SessionId) -> ok
 %% @end
 %%--------------------------------------------------------------------
-clear(Key) ->
-    Key = crypto:sha(term_to_binary({store_util:now(), erlang:make_ref()})),
-    TS = store_util:now(),
-    true = ets:delete(?TAB, Key),
+clear(SessionId) ->
+    true = ets:delete(?TAB, SessionId),
     ok.
 
 %%--------------------------------------------------------------------
 %% @doc adds value Value under Key to SessionId session
-%% @spec set_value(SessionId, Key, Value) -> ok
+%% @spec put(SessionId, Key, Value) -> ok
 %% @end
 %%--------------------------------------------------------------------
-set_value(SessionId, Key, Value) ->
-    exit(not_implemeted).
+put(SessionId, Key, Value) ->
+    case ets:lookup(?TAB, SessionId) of
+	[] ->
+	    exit(no_session);
+	[{SessionId, Session}] ->
+	    Session2 = [{Key, Value}|Session],
+	    true = ets:insert(?TAB, {SessionId, Session2})
+    end,
+    ok.
 
 %%--------------------------------------------------------------------
 %% @doc gets value for Key of SessionId session
 %% @spec get_value(SessionId, Key) -> Value | undefined
 %% @end
 %%--------------------------------------------------------------------
-get_value(Key, Value) ->
+get_value(SessionId, Key) ->
     exit(not_implemeted).
 
 %%%===================================================================
