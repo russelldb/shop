@@ -9,8 +9,10 @@ The idea is to be able to create skinnable, customisable web shops for a few hou
 Store is the app that allows you to add inventory.
 *** We need to persist store items [[http://www.pivotaltracker.com/story/show/4144578][Story]]
 **** DONE Create an "items" record
-*** TODO create behviour for store_db
+*** DONE create behviour for store_db
 *** DONE Add webmachine to deps
+
+**** TODO Add init to db and auth behaviours
 
 *** TODO Look at secure auth
 *** TODO Look at secure session
@@ -47,7 +49,7 @@ timed back off for total failed attempts per minute
 ** TODO build store supervision tree
 *** DONE Need authenticator
 *** DONE store db
-*** TODO session server (??) 
+*** DONE session server (??) 
 *** TODO wm frontend (?),
 *** DONE store event manager
 

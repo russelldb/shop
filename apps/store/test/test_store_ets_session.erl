@@ -62,6 +62,7 @@ clear_test_() ->
 %% @doc generates the tests for the session:clear
 %% @spec
 %% @end
+%% @TODO try clearing a non existant session
 %%--------------------------------------------------------------------
 generate_clear(_X) ->
     Key = store_ets_session:new(),
@@ -91,6 +92,55 @@ generate_set(_X) ->
     ok = store_ets_session:put(Key, test_key, test_value),
     [{Key, Session}] = ets:lookup(session, Key),
     [?_assertMatch(test_value, proplists:get_value(test_key, Session))].
+
+%%--------------------------------------------------------------------
+%% @doc tests set exits of session does not exist
+%% @spec
+%% @end
+%%--------------------------------------------------------------------
+empty_session_set_test_() ->
+    {setup, fun() ->
+		    ok  end,
+     fun(_X) -> ok end,
+     [?_assertMatch(ok, store_ets_session:init([])), ?_assertExit(no_session, store_ets_session:put(a_made_up_key, test_key, test_value))]}.
+
+%%--------------------------------------------------------------------
+%% @doc tests get retrieves value from a session
+%% @spec
+%% @end
+%%--------------------------------------------------------------------
+get_test_() ->
+    {setup, fun() ->
+		    store_ets_session:init([])  end,
+     fun(_X) -> teardown(session) end,
+     fun(X) -> generate_get(X) end}.
+
+%%--------------------------------------------------------------------
+%% @doc generates the tests for the session:clear
+%% @spec
+%% @end
+%%--------------------------------------------------------------------
+generate_get(_X) ->
+    Key = store_ets_session:new(),
+    [{Key, Session}] = ets:lookup(session, Key),
+    Session2 = [{my_key, my_value}|Session],
+    ets:insert(session, {Key, Session2}),
+    Val = store_ets_session:get(Key, my_key),
+    NoVal =  store_ets_session:get(Key, gibber),
+    [?_assertMatch( my_value, Val), ?_assertMatch(undefined, NoVal)].
+
+%%--------------------------------------------------------------------
+%% @doc tests get exits if session does not exist
+%% @spec
+%% @end
+%%--------------------------------------------------------------------
+empty_session_get_test_() ->
+    {setup, fun() ->
+		    ok  end,
+     fun(_X) -> ok end,
+     [?_assertMatch(ok, store_ets_session:init([])), ?_assertExit(no_session, store_ets_session:get(a_made_up_session, made_up_key))]}.
+
+
 
 %%%===================================================================
 %%% Internal functions

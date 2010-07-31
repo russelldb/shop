@@ -2,16 +2,16 @@
 %%% @author Russell Brown <russell@ossme.net>
 %%% @copyright (C) 2010, Russell Brown
 %%% @doc
-%%% store_db is a gen_server that puts store items into the db.
+%%% Generice session server, delegates to a store_session_behaviour module
 %%% @end
-%%% Created :  6 Jul 2010 by Russell Brown <russell@ossme.net>
+%%% Created : 31 Jul 2010 by Russell Brown <russell@ossme.net>
 %%%-------------------------------------------------------------------
--module(store_db).
+-module(store_session).
 
 -behaviour(gen_server).
 
 %% API
--export([start_link/1, stop/0, add_item/1, add_item/2, fetch_all_items/0]).
+-export([start_link/1, get/2, put/3, clear/1, new/0, stop/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -19,12 +19,10 @@
 
 -define(SERVER, ?MODULE). 
 
--include("store.hrl").
-
-
 %%%===================================================================
 %%% API
 %%%===================================================================
+
 %%--------------------------------------------------------------------
 %% @doc
 %% Starts the server
@@ -44,28 +42,37 @@ stop() ->
     gen_server:cast(?SERVER, stop).
 
 %%--------------------------------------------------------------------
-%% @doc calls the callback module's add_item/1 function
-%% @spec add_item(item()) -> ok
+%% @doc calls the callback module's new/0 function
+%% @spec new() -> session_id()
 %% @end
 %%--------------------------------------------------------------------
-add_item(Item) when is_record(Item, item) ->
-    gen_server:call(?SERVER, {add, Item}).
+new() ->
+    gen_server:call(?SERVER, new).
 
 %%--------------------------------------------------------------------
-%% @doc adds an item and its options
-%% @spec add_item(item(), [opt()]) -> ok
+%% @doc clears the session for sessionId
+%% @spec clear(session_id()) -> ok
 %% @end
 %%--------------------------------------------------------------------
-add_item(Item, Opts) when is_record(Item, item), is_list(Opts) ->
-    gen_server:call(?SERVER, {add, Item, Opts}).
+clear(SessionId) ->
+    gen_server:call(?SERVER, {clear, SessionId}).
 
 %%--------------------------------------------------------------------
-%% @doc gets all the items in the store
-%% @spec fetch_all_items() ->[{item, item(), [item_option()]}]
+%% @doc gets Key from SessionId session
+%% @spec get(SessionId, Key) -> term() | undefined
 %% @end
 %%--------------------------------------------------------------------
-fetch_all_items() ->
-    gen_server:call(?SERVER, {fetch_all}).
+get(SessionId, Key) ->
+    gen_server:call(?SERVER, {get, SessionId, Key}).
+
+%%--------------------------------------------------------------------
+%% @doc puts Value for Key in SessionId session
+%% @spec put(SessionId, Key, Value) -> term() | undefined
+%% @end
+%%--------------------------------------------------------------------
+put(SessionId, Key, Value) ->
+    gen_server:call(?SERVER, {put, SessionId, Key, Value}).
+
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -83,9 +90,11 @@ fetch_all_items() ->
 %% @end
 %%--------------------------------------------------------------------
 init(Env) ->
-    Store_db = proplists:get_value(db_module, Env),
-    true = is_valid(Store_db:module_info(exports)),
-    {ok, {db, Store_db}}.
+    Session = proplists:get_value(session_module, Env),
+    SessionEnv = proplists:get_value(session_env, Env),
+    true = is_valid(Session:module_info(exports)),
+    ok = Session:init(SessionEnv),
+    {ok, {session, Session}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -101,15 +110,18 @@ init(Env) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call({add, Item}, _From, {db, Db}=State) when is_record(Item, item) ->
-    Res = Db:add_item(Item),
-    {reply, Res, State};
-handle_call({add, Item, Opts}, _From, {db, Db}=State) when is_record(Item, item), is_list(Opts) ->
-    Res = Db:add_item(Item, Opts),
-    {reply, Res, State};
-handle_call({fetch_all}, _From, {db, Db}=State) ->
-    Res = Db:fetch_all_items(),
-    {reply, Res, State};
+handle_call(new, _From, {session, Session}=State) ->
+    SessionId = Session:new(),
+    {reply, SessionId, State};
+handle_call({clear, SessionId}, _From, {session, Session}=State) ->
+    ok = Session:clear(SessionId),
+    {reply, ok, State};
+handle_call({get, SessionId, Key}, _From, {session, Session}=State) ->
+    Val = Session:get(SessionId, Key),
+    {reply, Val, State};
+handle_call({put, SessionId, Key, Val}, _From, {session, Session}=State) ->
+    ok = Session:put(SessionId, Key, Val),
+    {reply, ok, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -178,6 +190,4 @@ code_change(_OldVsn, State, _Extra) ->
 is_valid([]) ->
     exit(bad_mod);
 is_valid(Exports) ->
-    lists:all( fun(X) -> lists:member(X, Exports) end, store_db_behaviour:behaviour_info(callbacks)).
-
-
+    store_util:is_valid_behaviour(store_session_behaviour, Exports).

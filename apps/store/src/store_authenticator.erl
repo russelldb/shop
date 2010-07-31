@@ -89,7 +89,10 @@ init(Env) ->
 %%--------------------------------------------------------------------
 handle_call({authenticate, Username, Password}, _From, {auth, Auth}=State) ->
     Res = Auth:authenticate(Username, Password),
-    {reply, Res, State}.
+    {reply, Res, State};
+handle_call(_Request, _From, State) ->
+    Reply = ok,
+    {reply, Reply, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -102,7 +105,9 @@ handle_call({authenticate, Username, Password}, _From, {auth, Auth}=State) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_cast(stop, State) ->
-    {stop, normal, State}.
+    {stop, normal, State};
+handle_cast(_Msg, State) ->
+    {noreply, State}.
 
 %%--------------------------------------------------------------------
 %% @private

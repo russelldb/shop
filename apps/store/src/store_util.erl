@@ -9,7 +9,7 @@
 -module(store_util).
 
 %% API
--export([now/0]).
+-export([now/0, is_valid_behaviour/2]).
 
 %%%===================================================================
 %%% API
@@ -23,6 +23,16 @@
 now() ->
     {Mega,Sec,Micro} = erlang:now(),
     (Mega*1000000+Sec)*1000000+Micro.
+
+%%--------------------------------------------------------------------
+%% @doc Checks that the passed module exports the required functions
+%% @spec is_valid([export()]) -> true | false
+%% @end
+%%--------------------------------------------------------------------
+is_valid_behaviour(_Behaviour, []) ->
+    exit(bad_mod);
+is_valid_behaviour(Behaviour, Exports) ->
+    lists:all( fun(X) -> lists:member(X, Exports) end, Behaviour:behaviour_info(callbacks)).
 
 %%%===================================================================
 %%% Internal functions

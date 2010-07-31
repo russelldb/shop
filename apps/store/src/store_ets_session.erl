@@ -13,7 +13,7 @@
 -define(TAB, session).
 
 %% API
--export([get_value/2, put/3, clear/1, new/0, init/1]).
+-export([get/2, put/3, clear/1, new/0, init/1]).
 
 %%%===================================================================
 %%% API
@@ -64,11 +64,16 @@ put(SessionId, Key, Value) ->
 
 %%--------------------------------------------------------------------
 %% @doc gets value for Key of SessionId session
-%% @spec get_value(SessionId, Key) -> Value | undefined
+%% @spec get(SessionId, Key) -> Value | undefined
 %% @end
 %%--------------------------------------------------------------------
-get_value(SessionId, Key) ->
-    exit(not_implemeted).
+get(SessionId, Key) ->
+    case ets:lookup(?TAB, SessionId) of
+	[] ->
+	    exit(no_session);
+	[{SessionId, Session}] ->
+	    proplists:get_value(Key, Session)
+    end.
 
 %%%===================================================================
 %%% Internal functions
