@@ -7,7 +7,8 @@
              web,
              web_app,
              web_sup,
-             web_resource
+             item_resource,
+	     dispatch_watcher
             ]},
   {registered, []},
   {applications, [

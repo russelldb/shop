@@ -13,7 +13,10 @@
 	     store_db_behaviour,
 	     store_mnesia_authenticator,
 	     store_authenticator_behaviour,
-	     store_util
+	     store_util,
+	     store_ets_session,
+	     store_session,
+	     store_session_behaviour
             ]},
   {registered, []},
   {applications, [
