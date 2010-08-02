@@ -1,2 +1,9 @@
 *.beam
 .eunit
+log
+erl_crash.dump
+apps/webmachine
+apps/tempile
+apps/bcrypt
+apps/mochiweb
+apps/erlydtl

@@ -1,0 +1,14 @@
+{% extends "base" %}
+{% block content %}
+<form name="login" action="login" method="post">
+<input type="hidden" value="{{ redirect }}"/>
+<fieldset>
+<legend>Login</legend>
+<label for="username">Username</label><input type="text"
+name="username"/>
+<label for="password">Password</label><input type="password"
+name="password"/>
+<input type="submit"/>
+</fieldset>
+</form>
+{% endblock %}

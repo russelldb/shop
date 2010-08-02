@@ -33,6 +33,7 @@ start() ->
     application:set_env(webmachine, webmachine_logger_module, 
                         webmachine_logger),
     ensure_started(webmachine),
+    ensure_started(tempile),
     application:start(web).
 
 %% @spec stop() -> ok

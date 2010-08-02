@@ -5,22 +5,22 @@ There will be a basket and a checkout that uses Paypal Express Checkout.
 It will be as modular and resuable as possible. Hopefully you just add your front end pages. We shall see.
 The idea is to be able to create skinnable, customisable web shops for a few hours work.
 
+
+
 ** Store
 Store is the app that allows you to add inventory.
 *** We need to persist store items [[http://www.pivotaltracker.com/story/show/4144578][Story]]
 **** DONE Create an "items" record
 *** DONE create behviour for store_db
 *** DONE Add webmachine to deps
+*** TODO Add config to static resource to chose default file
+*** TODO refactore static_resource.erl
 
 **** TODO Add init to db and auth behaviours
-
 *** TODO Look at secure auth
 *** TODO Look at secure session
-
-
 ** TODO Add auth
 *** TODO Auth needs
-
 ** successful LOGIN
 for wm?
 must come over ssl
@@ -61,4 +61,3 @@ PayPal Express Checkout App. Takes a basket and buys it
 
 ** Storefront
 Here is where the wares are sold
-

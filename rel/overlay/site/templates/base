@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Welcome to shop</title>
+
+<link rel="stylesheet" href="css/style.css" type="text/css" />
+<script type="text/javascript" src="js/shop.js"></script>
+	
+</head>
+
+<body>
+{% block content %}base content{% endblock %}
+</body>
+</html>

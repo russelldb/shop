@@ -8,7 +8,8 @@
              web_app,
              web_sup,
              item_resource,
-	     dispatch_watcher
+	     dispatch_watcher,
+	     static_resource
             ]},
   {registered, []},
   {applications, [
